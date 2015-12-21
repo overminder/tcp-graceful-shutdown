@@ -1,0 +1,14 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+mainClassName = "Main"
+
+sourceSets.main.java.srcDirs = ['.']
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'io.netty:netty-handler:4.0.31.Final'
+}
