@@ -1,0 +1,7 @@
+[package]
+name = "multi-nc"
+version = "0.1.0"
+authors = ["Tim JIANG <p90eri@gmail.com>"]
+
+[dependencies]
+mio = "*"
