@@ -1,6 +1,6 @@
 OBJCC := xcrun clang
-OBJCFLAGS := -fobjc-arc -g
-LDFLAGS := -fobjc-arc -g
+OBJCFLAGS := -fobjc-arc -g -O2 -flto
+LDFLAGS := -fobjc-arc -g -O2 -flto
 
 SRCS := $(wildcard *.m)
 OBJS := $(SRCS:.m=.o)

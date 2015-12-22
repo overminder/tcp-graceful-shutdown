@@ -75,8 +75,10 @@ public class Main {
     public static void main(String[] args) {
         final NioEventLoopGroup reactor = new NioEventLoopGroup();
 
-        final int PAYLOAD_SIZE = 1000;
-        final long MAX_CLIENTS = 5000;
+        final int PAYLOAD_SIZE = Integer.valueOf(System.getenv("BS_LEN"));
+        final long MAX_CLIENTS = Integer.valueOf(System.getenv("MAX_CLIENTS"));
+        final String host = System.getenv("HOST");
+        final int port = Integer.valueOf(System.getenv("PORT"));
 
         String bs = new String(new char[PAYLOAD_SIZE]).replace('\0', '.');
 
@@ -87,7 +89,7 @@ public class Main {
 
         for (int i = 0; i < MAX_CLIENTS; ++i) {
             StringSender client = new StringSender(reactor, bs);
-            client.connect("localhost", 6789).addListener((ChannelFuture f) -> {
+            client.connect(host, port).addListener((ChannelFuture f) -> {
                 //System.out.println("connect done: " + f.channel());
                 long connected = nConnected.incrementAndGet();
                 if (connected >= MAX_CLIENTS) {

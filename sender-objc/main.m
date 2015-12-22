@@ -20,12 +20,14 @@ int main(int argc, const char * argv[]) {
         NSRunLoop *reactor = [NSRunLoop currentRunLoop];
         __block BOOL shouldKeepRunning = YES;
 
-        NSString *payload = @"1234567890";
-        NSString *host = [NSString stringWithCString:getenv("HOST") encoding:NSASCIIStringEncoding];
+        NSString *payload = @"x";
         //NSString *host = @"10.2.129.53";
         //NSString *host = @"localhost";
-        int port = 6789;
-        NSString *stringToSend = [@"" stringByPaddingToLength:10000 * [payload length]
+        int port = atoi(getenv("PORT"));
+        int bs_len = atoi(getenv("BS_LEN"));
+        NSString *host = [NSString stringWithCString:getenv("HOST") encoding:NSASCIIStringEncoding];
+
+        NSString *stringToSend = [@"" stringByPaddingToLength:bs_len * [payload length]
                                                    withString:payload startingAtIndex:0];
         NSMutableArray *clients = [[NSMutableArray alloc] init];
 
