@@ -163,7 +163,7 @@ pub fn spawn_checkers(port: u16, expected_len: isize) {
     event_loop.register(&listener, Token(1), EventSet::all(), PollOpt::edge()).unwrap();
 
     let mut reactor = Reactor::new(listener, expected_len);
-    println!("Running the reactor...");
+    println!("EventLoop listening on :{}.", port);
     event_loop.run(&mut reactor).unwrap();
     println!("Done running reactor.");
 }
