@@ -16,8 +16,17 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   exposed-modules:     Lib
+                     , Types
   build-depends:       base >= 4.7 && < 5
+                     , pipes
+                     , pipes-network
+                     , bytestring
+                     , containers
+                     , async
+                     , stm
   default-language:    Haskell2010
+  default-extensions:  ScopedTypeVariables
+                     , RecordWildCards
 
 executable hs-graceful-io-exe
   hs-source-dirs:      app
