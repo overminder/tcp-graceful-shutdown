@@ -15,7 +15,7 @@
     return self;
 }
 
-static void configureSocket(NSOutputStream *s) {
+- (void)configureSocket:(NSOutputStream *)s {
     // Get socket fd
     CFDataRef socketData = CFWriteStreamCopyProperty((__bridge CFWriteStreamRef) s, kCFStreamPropertySocketNativeHandle);
     if (!socketData) {
@@ -33,9 +33,15 @@ static void configureSocket(NSOutputStream *s) {
     struct linger lopt;
 
     // The only bad conf: onoff = 1; linger = 0
-    lopt.l_onoff = 1;
-    lopt.l_linger = 1;
-    //setsockopt(handle, SOL_SOCKET, SO_LINGER, (void *) &lopt, sizeof(lopt));
+    if (self.soLinger >= 0) {
+        lopt.l_onoff = 1;
+        lopt.l_linger = self.soLinger;
+    }
+    else {
+        lopt.l_onoff = 0;
+        lopt.l_linger = 0;
+    }
+    setsockopt(handle, SOL_SOCKET, SO_LINGER, (void *) &lopt, sizeof(lopt));
 }
 
 - (BOOL)setup {
@@ -103,7 +109,7 @@ static void configureSocket(NSOutputStream *s) {
     switch (event) {
         case NSStreamEventHasSpaceAvailable:
             if (stream == self.outputStream) {
-                configureSocket(self.outputStream);
+                [self configureSocket:self.outputStream];
                 if (self.onWriteAvailable) {
                     self.onWriteAvailable();
                     self.onWriteAvailable = nil;

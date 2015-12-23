@@ -5,6 +5,7 @@
 @property NSString *host;
 @property int port;
 @property NSString *stringToSend;
+@property int soLinger;
 
 @property NSInputStream *inputStream;
 @property NSOutputStream *outputStream;
@@ -17,5 +18,7 @@
 - (void)stream:(NSStream *)stream handleEvent:(NSStreamEvent)event;
 
 - (void)doSend;
+
+- (void)configureSocket:(NSOutputStream *)s;
 
 @end

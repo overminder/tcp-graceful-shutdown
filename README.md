@@ -1,3 +1,3 @@
 # SYNOPSIS
 
-Examine with TCP graceful shutdown behaviors in different libraries.
+Experimenting with TCP graceful shutdown behaviors in different libraries.

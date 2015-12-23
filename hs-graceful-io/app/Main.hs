@@ -13,6 +13,7 @@ main = do
   bsLen <- read <$> getEnv "BS_LEN"
   nClients <- read <$> getEnv "MAX_CLIENTS"
   isReceiver <- read <$> getEnv "IS_RECEIVER"
+  soLinger <- read <$> getEnv "SO_LINGER"
   let
     rArgs = ReceiverArgs {
       raBsLen = bsLen,
@@ -26,7 +27,7 @@ main = do
       taHost = if isReceiver then "0.0.0.0" else fromJust remoteHost,
       taPort = port,
       taIsServer = isReceiver,
-      taSoLinger = Nothing
+      taSoLinger = if soLinger >= 0 then Just soLinger else Nothing
     }
   if isReceiver
     then serveReceiver rArgs tArgs

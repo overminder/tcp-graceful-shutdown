@@ -24,10 +24,12 @@ int main(int argc, const char * argv[]) {
         //NSString *host = @"10.2.129.53";
         //NSString *host = @"localhost";
         int port = atoi(getenv("PORT"));
-        int bs_len = atoi(getenv("BS_LEN"));
-        NSString *host = [NSString stringWithCString:getenv("HOST") encoding:NSASCIIStringEncoding];
+        int bsLen = atoi(getenv("BS_LEN"));
+        int soLinger = atoi(getenv("SO_LINGER"));
 
-        NSString *stringToSend = [@"" stringByPaddingToLength:bs_len * [payload length]
+        NSString *host = [NSString stringWithCString:getenv("REMOTE_HOST") encoding:NSASCIIStringEncoding];
+
+        NSString *stringToSend = [@"" stringByPaddingToLength:bsLen * [payload length]
                                                    withString:payload startingAtIndex:0];
         NSMutableArray *clients = [[NSMutableArray alloc] init];
 
@@ -49,12 +51,13 @@ int main(int argc, const char * argv[]) {
             if (++finishedClients >= MAX_CLIENTS) {
                 NSLog(@"All %zd clients have finished.", MAX_CLIENTS);
                 shouldKeepRunning = NO;
-                //raise(SIGKILL);
+                //raise(SIGSEGV);
             }
         };
         
         for (ssize_t i = 0; i < MAX_CLIENTS; ++i) {
             StringSender *client = mk(host, port, stringToSend, onDone);
+            client.soLinger = soLinger;
             client.onWriteAvailable = onWriteAvailable;
             [clients addObject:client];
         }

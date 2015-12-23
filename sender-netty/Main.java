@@ -16,6 +16,13 @@ import io.netty.util.concurrent.GenericFutureListener;
 
 public class Main {
 
+    static final int PAYLOAD_SIZE = Integer.valueOf(System.getenv("BS_LEN"));
+    static final long MAX_CLIENTS = Integer.valueOf(System.getenv("MAX_CLIENTS"));
+    static final String REMOTE_HOST = System.getenv("REMOTE_HOST");
+    static final int PORT = Integer.valueOf(System.getenv("PORT"));
+    static final int reportPer = 10;
+    static final int SO_LINGER = Integer.valueOf(System.getenv("SO_LINGER"));
+
     static class StringSender {
         private final String content;
         private final EventLoopGroup reactor;
@@ -38,7 +45,7 @@ public class Main {
 
             return clientBootstrap.group(reactor)
                     .channel(NioSocketChannel.class)
-                    //.option(ChannelOption.SO_LINGER, 1)
+                    .option(ChannelOption.SO_LINGER, SO_LINGER)
                     .handler(clientInitializer)
                     .connect(host, port)
                     .addListener((ChannelFuture cf) -> {
@@ -75,12 +82,7 @@ public class Main {
     public static void main(String[] args) {
         final NioEventLoopGroup reactor = new NioEventLoopGroup();
 
-        final int PAYLOAD_SIZE = Integer.valueOf(System.getenv("BS_LEN"));
-        final long MAX_CLIENTS = Integer.valueOf(System.getenv("MAX_CLIENTS"));
-        final String host = System.getenv("HOST");
-        final int port = Integer.valueOf(System.getenv("PORT"));
-
-        String bs = new String(new char[PAYLOAD_SIZE]).replace('\0', '.');
+        String bs = new String(new char[PAYLOAD_SIZE]);
 
         System.out.println("Connecting...");
         List<StringSender> clients = new ArrayList<>();
@@ -89,7 +91,7 @@ public class Main {
 
         for (int i = 0; i < MAX_CLIENTS; ++i) {
             StringSender client = new StringSender(reactor, bs);
-            client.connect(host, port).addListener((ChannelFuture f) -> {
+            client.connect(REMOTE_HOST, PORT).addListener((ChannelFuture f) -> {
                 //System.out.println("connect done: " + f.channel());
                 long connected = nConnected.incrementAndGet();
                 if (connected >= MAX_CLIENTS) {
@@ -103,12 +105,12 @@ public class Main {
                                 System.out.println("Reactor stopped.");
                             });
                         }
-                        else if (sent % 100 == 0) {
+                        else if (sent % reportPer == 0) {
                             System.out.printf("sendAll: finished (%d/%d)\n", sent, MAX_CLIENTS);
                         }
                     }));
                 }
-                else if (connected % 100 == 0) {
+                else if (connected % reportPer == 0) {
                     System.out.printf("connect: finished (%d/%d)\n", connected, MAX_CLIENTS);
                 }
             });
