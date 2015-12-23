@@ -8,6 +8,7 @@ import Pipes.Network.TCP.Safe
 import Control.Exception
 import Control.Monad (forever, when, replicateM)
 import Control.Concurrent.MVar
+import Control.Concurrent (threadDelay)
 import Network.Socket (shutdown, ShutdownCmd(..))
 import Data.IORef
 import qualified Data.Map as M
@@ -36,8 +37,8 @@ runSender (SenderArgs {..}) tArgs@(TcpArgs {..}) = do
       atomically $ do
         connected <- readTVar connectedRef
         when (connected < saClients) retry
+      runEffect $ yield payload >-> toSocket sock
       res <- try $ do
-        runEffect $ yield payload >-> toSocket sock
         when taGracefulShutdown $ do
           shutdown sock ShutdownSend
           runEffect $ fromSocket sock 4096 >-> expectEof
@@ -65,6 +66,7 @@ serveReceiver rArgs tArgs@(TcpArgs {..}) = do
       Right () -> return ()
     totalRead <- readIORef totalReadRef
     reportReceiverStat rArgs totalRead statRef
+    threadDelay 1500000
 
 gatherStat :: IORef Int -> Consumer B.ByteString IO ()
 gatherStat totalReadRef = forever $ go
