@@ -8,6 +8,7 @@ import Pipes.Network.TCP.Safe
 import Control.Exception
 import Control.Monad (forever, when, replicateM)
 import Control.Concurrent.MVar
+import Network.Socket (shutdown, ShutdownCmd(..))
 import Data.IORef
 import qualified Data.Map as M
 import qualified Data.ByteString as B
@@ -26,14 +27,29 @@ runSender (SenderArgs {..}) tArgs@(TcpArgs {..}) = do
   connectedRef <- newTVarIO 0
   let payload = B.replicate saBsLen (0 :: Word8)
   ts <- replicateM saClients $ async $ runSafeT $ do
-    connectTA tArgs $ \ (sock, _) -> do
-      lift $ do
-        atomically $ modifyTVar' connectedRef (+1)
-        atomically $ do
-          connected <- readTVar connectedRef
-          when (connected < saClients) retry
-      runEffect $ yield payload >-> toSocket sock
+    connectTA tArgs $ \ (sock, _) -> lift $ do
+      connected <- atomically $ do
+        modifyTVar' connectedRef (+1)
+        readTVar connectedRef
+      when (connected `mod` saReportPer == 0) $ do
+        putStrLn $ "Connected: " ++ show (connected, saClients)
+      atomically $ do
+        connected <- readTVar connectedRef
+        when (connected < saClients) retry
+      res <- try $ do
+        runEffect $ yield payload >-> toSocket sock
+        when taGracefulShutdown $ do
+          shutdown sock ShutdownSend
+          runEffect $ fromSocket sock 4096 >-> expectEof
+          shutdown sock ShutdownReceive
+      case res of
+        Left (e :: SomeException) -> putStrLn $ "XXX: toSocket: " ++ show e
+        Right () -> return ()
   mapM_ wait ts
+
+expectEof = do
+  absurd <- await
+  lift $ putStrLn "XXX: expectEof: Should not reach here."
 
 serveReceiver :: ReceiverArgs -> TcpArgs -> IO ()
 serveReceiver rArgs tArgs@(TcpArgs {..}) = do
@@ -41,12 +57,14 @@ serveReceiver rArgs tArgs@(TcpArgs {..}) = do
   putStrLn $ "Serving at " ++ taHost ++ ":" ++ show taPort
   runSafeT $ serveTA tArgs $ \ (sock, addr) -> do
     totalReadRef <- newIORef 0
-    res <- try (runEffect $ fromSocket sock 4096 >-> gatherStat totalReadRef)
-    totalRead <- readIORef totalReadRef
-    reportReceiverStat rArgs totalRead statRef
+    res <- try $ do
+      runEffect $ fromSocket sock 4096 >-> gatherStat totalReadRef
+      when taGracefulShutdown $ shutdown sock ShutdownSend
     case res of
       Left (e :: SomeException) -> putStrLn $ "XXX: fromSocket: " ++ show e
       Right () -> return ()
+    totalRead <- readIORef totalReadRef
+    reportReceiverStat rArgs totalRead statRef
 
 gatherStat :: IORef Int -> Consumer B.ByteString IO ()
 gatherStat totalReadRef = forever $ go

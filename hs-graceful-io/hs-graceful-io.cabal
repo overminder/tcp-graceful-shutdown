@@ -24,6 +24,7 @@ library
                      , containers
                      , async
                      , stm
+                     , network
   default-language:    Haskell2010
   default-extensions:  ScopedTypeVariables
                      , RecordWildCards

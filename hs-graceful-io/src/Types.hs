@@ -11,6 +11,7 @@ data SenderArgs
   = SenderArgs
   { saBsLen :: Int
   , saClients :: Int
+  , saReportPer :: Int
   }
   deriving (Show)
 
@@ -20,5 +21,6 @@ data TcpArgs
   , taPort :: Int
   , taIsServer :: Bool
   , taSoLinger :: Maybe Int
+  , taGracefulShutdown :: Bool
   }
   deriving (Show)
