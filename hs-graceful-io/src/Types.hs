@@ -5,12 +5,14 @@ data ReceiverArgs
   { raBsLen :: Int
   , raReportPer :: Int
   }
+  deriving (Show)
 
 data SenderArgs 
   = SenderArgs
   { saBsLen :: Int
   , saClients :: Int
   }
+  deriving (Show)
 
 data TcpArgs
   = TcpArgs
@@ -19,3 +21,4 @@ data TcpArgs
   , taIsServer :: Bool
   , taSoLinger :: Maybe Int
   }
+  deriving (Show)

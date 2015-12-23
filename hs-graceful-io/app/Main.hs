@@ -30,5 +30,9 @@ main = do
       taSoLinger = if soLinger >= 0 then Just soLinger else Nothing
     }
   if isReceiver
-    then serveReceiver rArgs tArgs
-    else runSender sArgs tArgs
+    then do
+      putStrLn $ "serveReceiver: " ++ show rArgs ++ "; " ++ show tArgs
+      serveReceiver rArgs tArgs
+    else do
+      putStrLn $ "runSender: " ++ show sArgs ++ "; " ++ show tArgs
+      runSender sArgs tArgs

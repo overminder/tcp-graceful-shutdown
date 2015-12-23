@@ -64,4 +64,5 @@ reportReceiverStat (ReceiverArgs {..}) totalRead statRef = do
       newStat = (okCount', totalCount + 1)
     return (newStat, newStat)
   when (totalCount `mod` raReportPer == 0) $ do
-    putStrLn $ "[reportStat] counts = " ++ show stat ++ " ok = " ++ show ok
+    putStrLn $ "[reportStat] counts = " ++ show stat ++ " ok = " ++ show ok ++
+               "; bsCount = " ++ show (totalRead, raBsLen)
